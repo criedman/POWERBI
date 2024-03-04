@@ -1,0 +1,5 @@
+Filter-Measure für Einzelnachweis = 
+ABS([Headcount])
++ ([Eintritte])
++ ABS([Austritte])
++ ABS([Ein-/Austritte])
