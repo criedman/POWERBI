@@ -1,0 +1,10 @@
+Austritte (Bestand) = 
+VAR
+Highest_Year = [Aktuelles Jahr]
+RETURN
+IF(
+ISBLANK(Highest_Year),
+BLANK(),
+CALCULATE(
+[Austritte],
+'Dimension Datum'[Jahr]=Highest_Year))
