@@ -1,0 +1,4 @@
+Headcount = CALCULATE([Ein-/Austritte],FILTER(
+ALL('Dimension Datum'[Datum]),
+'Dimension Datum'[Datum] <= MAX('Dimension Datum'[Datum])
+))
