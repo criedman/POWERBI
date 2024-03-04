@@ -1,0 +1,2 @@
+Austritte = CALCULATE([Ein-/Austritte],'MA-TRX'[Transaktionstyp]="Austritt")
+  
