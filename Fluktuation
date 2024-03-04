@@ -1,0 +1,1 @@
+Fluktuation = Divide([Austritte],([Headcount VJ] + [Headcount])/2) * -1
