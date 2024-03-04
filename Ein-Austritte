@@ -1,0 +1,1 @@
+Ein-/Austritte = SUM('MA-TRX'[Ein-/Austritt])
