@@ -1,0 +1,4 @@
+Aktuelles Jahr = CALCULATE(
+MAXX('MA-TRX',year('MA-TRX'[EINTRITTSDATUM])),
+ALL('MA-TRX')
+)
