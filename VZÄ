@@ -1,0 +1,4 @@
+VZÄ = CALCULATE(sum('MA-TRX'[VZÄ]),FILTER(
+ALL('Dimension Datum'[Datum]),
+'Dimension Datum'[Datum] <= MAX('Dimension Datum'[Datum])
+))
