@@ -1,0 +1,4 @@
+Headcount VJ = CALCULATE(
+[Headcount],
+DATEADD('Dimension Datum'[Datum],-1,YEAR)
+)
