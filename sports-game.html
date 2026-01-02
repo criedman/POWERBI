@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sport Champions - Match 3 Spiel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 15px 20px;
+            border-radius: 15px;
+            flex: 1;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-box.energy {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-box.crystals {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .stat-box.score {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 5px;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tile {
+            aspect-ratio: 1;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .tile:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .tile.selected {
+            background: #ffd700;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .tile.matching {
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-energy {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-crystals {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .btn-new-game {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .level-info {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px 50px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: none;
+            text-align: center;
+        }
+
+        .message.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    <div class="message" id="message">
+        <h2 id="messageTitle">🎉 Glückwunsch!</h2>
+        <p id="messageText">Du hast Level 1 abgeschlossen!</p>
+        <button class="btn btn-new-game" onclick="closeMessage()">Weiter spielen</button>
+    </div>
+
+    <div class="game-container">
+        <div class="header">
+            <h1>⚽ Sport Champions 🏀</h1>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-box level">
+                <div class="stat-label">Level</div>
+                <div class="stat-value" id="level">1</div>
+            </div>
+            <div class="stat-box energy">
+                <div class="stat-label">⚡ Energie</div>
+                <div class="stat-value" id="energy">10</div>
+            </div>
+            <div class="stat-box crystals">
+                <div class="stat-label">💎 Kristalle</div>
+                <div class="stat-value" id="crystals">100</div>
+            </div>
+            <div class="stat-box score">
+                <div class="stat-label">🏆 Punkte</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <div class="level-info">Ziel: <span id="targetScore">500</span> Punkte</div>
+            <div>Züge übrig: <span id="movesLeft">20</span></div>
+        </div>
+
+        <div class="board" id="board"></div>
+
+        <div class="controls">
+            <button class="btn btn-energy" onclick="addEnergy()">
+                ⚡ +5 Energie (KOSTENLOS)
+            </button>
+            <button class="btn btn-crystals" onclick="addCrystals()">
+                💎 +50 Kristalle (KOSTENLOS)
+            </button>
+            <button class="btn btn-new-game" onclick="newGame()">
+                🔄 Neues Spiel
+            </button>
+        </div>
+
+        <div class="info-box">
+            <strong>Wie spielen:</strong> Klicke zwei benachbarte Sport-Icons an, um sie zu tauschen.
+            Bilde eine Reihe von 3 oder mehr gleichen Icons! ⚽🏀🎾⚾🏈
+        </div>
+    </div>
+
+    <script>
+        // Spielkonstanten
+        const BOARD_SIZE = 8;
+        const SPORTS_ICONS = ['⚽', '🏀', '🎾', '⚾', '🏈', '🏐'];
+
+        // Spielzustand
+        let gameState = {
+            board: [],
+            selectedTile: null,
+            energy: 10,
+            crystals: 100,
+            score: 0,
+            level: 1,
+            movesLeft: 20,
+            targetScore: 500
+        };
+
+        // Initialisiere das Spiel
+        function initGame() {
+            createBoard();
+            updateStats();
+            clearMatches(); // Entferne initiale Matches
+        }
+
+        // Erstelle Spielfeld
+        function createBoard() {
+            const boardElement = document.getElementById('board');
+            boardElement.innerHTML = '';
+            gameState.board = [];
+
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                gameState.board[row] = [];
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    const icon = getRandomIcon();
+                    gameState.board[row][col] = icon;
+
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.textContent = icon;
+                    tile.dataset.row = row;
+                    tile.dataset.col = col;
+                    tile.onclick = () => selectTile(row, col);
+                    boardElement.appendChild(tile);
+                }
+            }
+        }
+
+        // Zufälliges Sport-Icon
+        function getRandomIcon() {
+            return SPORTS_ICONS[Math.floor(Math.random() * SPORTS_ICONS.length)];
+        }
+
+        // Tile auswählen
+        function selectTile(row, col) {
+            if (gameState.movesLeft <= 0) {
+                showMessage('Keine Züge mehr!', 'Level gescheitert. Starte ein neues Spiel!');
+                return;
+            }
+
+            const tile = getTileElement(row, col);
+
+            if (!gameState.selectedTile) {
+                // Ersten Tile auswählen
+                gameState.selectedTile = { row, col };
+                tile.classList.add('selected');
+            } else {
+                // Zweiten Tile auswählen und tauschen versuchen
+                const first = gameState.selectedTile;
+
+                // Entferne Auswahl-Highlight
+                getTileElement(first.row, first.col).classList.remove('selected');
+
+                // Prüfe ob benachbart
+                if (isAdjacent(first, { row, col })) {
+                    swapTiles(first, { row, col });
+                    gameState.selectedTile = null;
+                } else {
+                    // Nicht benachbart, wähle neuen Tile
+                    gameState.selectedTile = { row, col };
+                    tile.classList.add('selected');
+                }
+            }
+        }
+
+        // Prüfe ob Tiles benachbart sind
+        function isAdjacent(tile1, tile2) {
+            const rowDiff = Math.abs(tile1.row - tile2.row);
+            const colDiff = Math.abs(tile1.col - tile2.col);
+            return (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
+        }
+
+        // Tausche Tiles
+        function swapTiles(tile1, tile2) {
+            // Tausche im Array
+            const temp = gameState.board[tile1.row][tile1.col];
+            gameState.board[tile1.row][tile1.col] = gameState.board[tile2.row][tile2.col];
+            gameState.board[tile2.row][tile2.col] = temp;
+
+            // Update visuell
+            updateBoard();
+
+            // Prüfe auf Matches
+            const matches = findMatches();
+            if (matches.length > 0) {
+                gameState.movesLeft--;
+                setTimeout(() => {
+                    clearMatches();
+                    updateStats();
+                }, 300);
+            } else {
+                // Tausch rückgängig machen
+                const temp = gameState.board[tile1.row][tile1.col];
+                gameState.board[tile1.row][tile1.col] = gameState.board[tile2.row][tile2.col];
+                gameState.board[tile2.row][tile2.col] = temp;
+                updateBoard();
+            }
+        }
+
+        // Finde Matches
+        function findMatches() {
+            const matches = new Set();
+
+            // Horizontale Matches
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE - 2; col++) {
+                    const icon = gameState.board[row][col];
+                    if (icon &&
+                        icon === gameState.board[row][col + 1] &&
+                        icon === gameState.board[row][col + 2]) {
+                        matches.add(`${row},${col}`);
+                        matches.add(`${row},${col + 1}`);
+                        matches.add(`${row},${col + 2}`);
+                    }
+                }
+            }
+
+            // Vertikale Matches
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                for (let row = 0; row < BOARD_SIZE - 2; row++) {
+                    const icon = gameState.board[row][col];
+                    if (icon &&
+                        icon === gameState.board[row + 1][col] &&
+                        icon === gameState.board[row + 2][col]) {
+                        matches.add(`${row},${col}`);
+                        matches.add(`${row + 1},${col}`);
+                        matches.add(`${row + 2},${col}`);
+                    }
+                }
+            }
+
+            return Array.from(matches).map(coord => {
+                const [row, col] = coord.split(',').map(Number);
+                return { row, col };
+            });
+        }
+
+        // Entferne Matches
+        function clearMatches() {
+            let matches = findMatches();
+
+            while (matches.length > 0) {
+                // Markiere Matches visuell
+                matches.forEach(match => {
+                    getTileElement(match.row, match.col).classList.add('matching');
+                });
+
+                // Punkte hinzufügen
+                const points = matches.length * 10;
+                gameState.score += points;
+
+                // Entferne Matches
+                matches.forEach(match => {
+                    gameState.board[match.row][match.col] = null;
+                });
+
+                // Tiles fallen lassen
+                dropTiles();
+
+                // Fülle leere Stellen
+                fillBoard();
+
+                // Update Board
+                updateBoard();
+
+                // Prüfe Level-Fortschritt
+                checkLevelComplete();
+
+                // Finde neue Matches
+                matches = findMatches();
+            }
+        }
+
+        // Tiles fallen lassen
+        function dropTiles() {
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                for (let row = BOARD_SIZE - 1; row >= 0; row--) {
+                    if (gameState.board[row][col] === null) {
+                        // Finde nächstes nicht-null Tile darüber
+                        for (let newRow = row - 1; newRow >= 0; newRow--) {
+                            if (gameState.board[newRow][col] !== null) {
+                                gameState.board[row][col] = gameState.board[newRow][col];
+                                gameState.board[newRow][col] = null;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fülle leere Stellen
+        function fillBoard() {
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    if (gameState.board[row][col] === null) {
+                        gameState.board[row][col] = getRandomIcon();
+                    }
+                }
+            }
+        }
+
+        // Update Board visuell
+        function updateBoard() {
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    const tile = getTileElement(row, col);
+                    tile.textContent = gameState.board[row][col];
+                    tile.classList.remove('matching');
+                }
+            }
+        }
+
+        // Hole Tile Element
+        function getTileElement(row, col) {
+            return document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+        }
+
+        // Update Statistiken
+        function updateStats() {
+            document.getElementById('energy').textContent = gameState.energy;
+            document.getElementById('crystals').textContent = gameState.crystals;
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('movesLeft').textContent = gameState.movesLeft;
+            document.getElementById('targetScore').textContent = gameState.targetScore;
+        }
+
+        // Prüfe Level-Abschluss
+        function checkLevelComplete() {
+            if (gameState.score >= gameState.targetScore) {
+                gameState.level++;
+                gameState.targetScore = gameState.level * 500;
+                gameState.movesLeft = 20;
+                gameState.crystals += 50;
+                showMessage(
+                    `🎉 Level ${gameState.level - 1} geschafft!`,
+                    `Super! Du hast ${gameState.score} Punkte erreicht. Weiter zu Level ${gameState.level}!`
+                );
+            } else if (gameState.movesLeft <= 0) {
+                showMessage(
+                    '😔 Level gescheitert',
+                    `Du hast ${gameState.score} von ${gameState.targetScore} Punkten erreicht. Versuch es nochmal!`
+                );
+            }
+        }
+
+        // Zeige Nachricht
+        function showMessage(title, text) {
+            document.getElementById('messageTitle').textContent = title;
+            document.getElementById('messageText').textContent = text;
+            document.getElementById('message').classList.add('show');
+            document.getElementById('overlay').classList.add('show');
+        }
+
+        // Schließe Nachricht
+        function closeMessage() {
+            document.getElementById('message').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+        }
+
+        // Energie hinzufügen (KOSTENLOS)
+        function addEnergy() {
+            gameState.energy += 5;
+            updateStats();
+            showMessage('⚡ Energie aufgeladen!', 'Du hast 5 Energie kostenlos erhalten!');
+            setTimeout(closeMessage, 1500);
+        }
+
+        // Kristalle hinzufügen (KOSTENLOS)
+        function addCrystals() {
+            gameState.crystals += 50;
+            updateStats();
+            showMessage('💎 Kristalle erhalten!', 'Du hast 50 Kristalle kostenlos erhalten!');
+            setTimeout(closeMessage, 1500);
+        }
+
+        // Neues Spiel
+        function newGame() {
+            gameState = {
+                board: [],
+                selectedTile: null,
+                energy: 10,
+                crystals: 100,
+                score: 0,
+                level: 1,
+                movesLeft: 20,
+                targetScore: 500
+            };
+            initGame();
+        }
+
+        // Starte Spiel beim Laden
+        window.onload = initGame;
+    </script>
+</body>
+</html>
